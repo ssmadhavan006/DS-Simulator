@@ -81,7 +81,8 @@ enum DSType {
   stack('Stack', 'LIFO - Last In First Out'),
   queue('Queue', 'FIFO - First In First Out'),
   tree('Tree', 'Hierarchical Data Structure'),
-  graph('Graph', 'Network of Nodes & Edges');
+  graph('Graph', 'Network of Nodes & Edges'),
+  sorting('Sorting', 'Sorting Algorithms');
 
   final String title;
   final String description;

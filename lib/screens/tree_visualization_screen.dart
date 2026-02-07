@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/stack_provider.dart';
-import '../widgets/visualizers/stack_visualizer.dart';
+import '../providers/tree_provider.dart';
+import '../models/tree_node.dart';
+import '../widgets/visualizers/tree_visualizer.dart';
 import '../widgets/common/control_panel.dart';
 import '../widgets/common/operation_button.dart';
 import '../widgets/common/value_input_dialog.dart';
 import '../widgets/common/complexity_display.dart';
 import '../widgets/common/code_preview.dart';
+import '../widgets/common/zoomable_visualization.dart';
 import '../utils/constants.dart';
 
-/// Stack Visualization Screen
-class StackVisualizationScreen extends StatelessWidget {
-  const StackVisualizationScreen({super.key});
+/// Tree Visualization Screen (BST)
+class TreeVisualizationScreen extends StatelessWidget {
+  const TreeVisualizationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => StackProvider(),
-      child: const _StackVisualizationContent(),
+      create: (_) => TreeProvider(),
+      child: const _TreeVisualizationContent(),
     );
   }
 }
 
-class _StackVisualizationContent extends StatelessWidget {
-  const _StackVisualizationContent();
+class _TreeVisualizationContent extends StatelessWidget {
+  const _TreeVisualizationContent();
 
   @override
   Widget build(BuildContext context) {
@@ -33,22 +35,47 @@ class _StackVisualizationContent extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stack Visualization'),
+        title: Consumer<TreeProvider>(
+          builder: (context, provider, _) {
+            return Text(
+              provider.isAVLMode
+                  ? 'AVL Tree (Self-Balancing)'
+                  : 'Binary Search Tree',
+            );
+          },
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          Consumer<StackProvider>(
+          Consumer<TreeProvider>(
             builder: (context, provider, _) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Text(
-                    'Size: ${provider.size}/${AppConstants.maxStackSize}',
-                    style: theme.textTheme.labelLarge,
+              return Row(
+                children: [
+                  // AVL Mode Toggle
+                  IconButton(
+                    icon: Icon(
+                      provider.isAVLMode ? Icons.balance : Icons.account_tree,
+                      color: provider.isAVLMode
+                          ? AppConstants.secondaryColor
+                          : null,
+                    ),
+                    onPressed: provider.toggleAVLMode,
+                    tooltip: provider.isAVLMode
+                        ? 'Switch to BST'
+                        : 'Switch to AVL',
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Center(
+                      child: Text(
+                        'Nodes: ${provider.size} | Height: ${provider.height}',
+                        style: theme.textTheme.labelLarge,
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -88,7 +115,7 @@ class _StackVisualizationContent extends StatelessWidget {
       children: [
         // Visualization Area
         Expanded(flex: 3, child: _buildVisualizationArea(context, theme)),
-        // Operations & Details in tabs or scrolling
+        // Operations & Details in tabs
         Expanded(
           flex: 2,
           child: DefaultTabController(
@@ -119,7 +146,7 @@ class _StackVisualizationContent extends StatelessWidget {
   }
 
   Widget _buildOperationsPanel(BuildContext context, ThemeData theme) {
-    return Consumer<StackProvider>(
+    return Consumer<TreeProvider>(
       builder: (context, provider, _) {
         final isAnimating = provider.animationState != AnimationState.idle;
 
@@ -143,35 +170,59 @@ class _StackVisualizationContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 OperationButton(
-                  label: 'Push',
-                  icon: Icons.add_box,
+                  label: 'Insert Node',
+                  icon: Icons.add_circle,
                   color: AppConstants.primaryColor,
-                  enabled: !isAnimating && !provider.isFull,
-                  onPressed: () => _showPushDialog(context, provider),
+                  enabled:
+                      !isAnimating && provider.size < AppConstants.maxTreeNodes,
+                  onPressed: () => _showInsertDialog(context, provider),
                 ),
                 const SizedBox(height: 8),
                 OperationButton(
-                  label: 'Pop',
-                  icon: Icons.remove_circle,
-                  color: AppConstants.errorColor,
-                  enabled: !isAnimating && !provider.isEmpty,
-                  onPressed: () => provider.pop(),
-                ),
-                const SizedBox(height: 8),
-                OperationButton(
-                  label: 'Peek',
-                  icon: Icons.visibility,
+                  label: 'Search Node',
+                  icon: Icons.search,
                   color: AppConstants.secondaryColor,
                   enabled: !isAnimating && !provider.isEmpty,
-                  onPressed: () => provider.peek(),
+                  onPressed: () => _showSearchDialog(context, provider),
                 ),
-                const Divider(height: 32),
+                const Divider(height: 24),
+                Text(
+                  'Traversals',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 OperationButton(
-                  label: 'Random (5)',
+                  label: 'In-Order',
+                  icon: Icons.call_split,
+                  color: Colors.purple,
+                  enabled: !isAnimating && !provider.isEmpty,
+                  onPressed: () => provider.traverse(TraversalType.inOrder),
+                ),
+                const SizedBox(height: 8),
+                OperationButton(
+                  label: 'Pre-Order',
+                  icon: Icons.arrow_right_alt,
+                  color: Colors.indigo,
+                  enabled: !isAnimating && !provider.isEmpty,
+                  onPressed: () => provider.traverse(TraversalType.preOrder),
+                ),
+                const SizedBox(height: 8),
+                OperationButton(
+                  label: 'Post-Order',
+                  icon: Icons.subdirectory_arrow_right,
+                  color: Colors.cyan,
+                  enabled: !isAnimating && !provider.isEmpty,
+                  onPressed: () => provider.traverse(TraversalType.postOrder),
+                ),
+                const Divider(height: 24),
+                OperationButton(
+                  label: 'Random (7)',
                   icon: Icons.shuffle,
                   color: Colors.orange,
                   enabled: !isAnimating,
-                  onPressed: () => provider.generateRandom(5),
+                  onPressed: () => provider.generateRandom(7),
                 ),
                 const SizedBox(height: 8),
                 OperationButton(
@@ -196,48 +247,47 @@ class _StackVisualizationContent extends StatelessWidget {
   }
 
   Widget _buildVisualizationArea(BuildContext context, ThemeData theme) {
-    return Consumer<StackProvider>(
+    return Consumer<TreeProvider>(
       builder: (context, provider, _) {
         return Column(
           children: [
-            // Status Message - fixed at top
+            // Status Message
             if (provider.statusMessage != null)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(provider).withAlpha(31),
+                  color: AppConstants.primaryColor.withAlpha(31),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: _getStatusColor(provider).withAlpha(127),
+                    color: AppConstants.primaryColor.withAlpha(127),
                   ),
                 ),
                 child: Text(
                   provider.statusMessage!,
                   style: TextStyle(
-                    color: _getStatusColor(provider),
+                    color: AppConstants.primaryColor,
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
-            // Stack Visualizer with pan/zoom support
+            // Tree Visualizer with pan/zoom
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: InteractiveViewer(
-                  constrained: false,
-                  boundaryMargin: const EdgeInsets.all(100),
-                  minScale: 0.5,
-                  maxScale: 2.0,
+                child: ZoomableVisualization(
+                  minScale: 0.3,
+                  maxScale: 3.0,
                   child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: (provider.items.length + 2) * 60.0 + 150,
-                    child: StackVisualizer(
-                      items: provider.items,
+                    width: MediaQuery.of(context).size.width * 1.5,
+                    height: (provider.height + 1) * 100.0 + 100,
+                    child: TreeVisualizer(
+                      root: provider.root,
                       animatingNode: provider.animatingNode,
-                      currentOperation: provider.currentOperation,
+                      animatingPath: provider.animatingPath,
+                      showBalanceFactor: provider.isAVLMode,
                     ),
                   ),
                 ),
@@ -250,7 +300,7 @@ class _StackVisualizationContent extends StatelessWidget {
   }
 
   Widget _buildDetailsPanel(BuildContext context, ThemeData theme) {
-    return Consumer<StackProvider>(
+    return Consumer<TreeProvider>(
       builder: (context, provider, _) {
         return DefaultTabController(
           length: 2,
@@ -287,8 +337,8 @@ class _StackVisualizationContent extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             const ComplexityDisplay(
-                              operation: 'push',
-                              dsType: 'stack',
+                              operation: 'insert_bst',
+                              dsType: 'tree',
                             ),
                             const Divider(height: 24),
                             Text(
@@ -312,7 +362,7 @@ class _StackVisualizationContent extends StatelessWidget {
                                       vertical: 2,
                                     ),
                                     child: Text(
-                                      '${op.type}${op.node != null ? "(${op.node!.value})" : ""}',
+                                      '${op.type}${op.value != null ? "(${op.value})" : ""}',
                                       style: theme.textTheme.bodySmall,
                                     ),
                                   );
@@ -326,7 +376,7 @@ class _StackVisualizationContent extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: CodePreview(
-                          operation: provider.currentOperation ?? 'push',
+                          operation: provider.currentOperation ?? 'insert_bst',
                         ),
                       ),
                     ],
@@ -340,28 +390,27 @@ class _StackVisualizationContent extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(StackProvider provider) {
-    if (provider.statusMessage?.contains('Overflow') == true ||
-        provider.statusMessage?.contains('Underflow') == true) {
-      return AppConstants.errorColor;
-    }
-    if (provider.statusMessage?.contains('Pushed') == true) {
-      return AppConstants.secondaryColor;
-    }
-    if (provider.statusMessage?.contains('Popped') == true) {
-      return AppConstants.warningColor;
-    }
-    return AppConstants.primaryColor;
-  }
-
-  void _showPushDialog(BuildContext context, StackProvider provider) {
+  void _showInsertDialog(BuildContext context, TreeProvider provider) {
     showDialog(
       context: context,
       builder: (context) => ValueInputDialog(
-        title: 'Push Value',
+        title: 'Insert Node',
         hint: 'Enter a number (0-99)',
         onSubmit: (value) {
-          provider.push(value);
+          provider.insert(value);
+        },
+      ),
+    );
+  }
+
+  void _showSearchDialog(BuildContext context, TreeProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) => ValueInputDialog(
+        title: 'Search Node',
+        hint: 'Enter a number to search',
+        onSubmit: (value) {
+          provider.search(value);
         },
       ),
     );

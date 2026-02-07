@@ -4,6 +4,9 @@ import '../providers/theme_provider.dart';
 import '../utils/constants.dart';
 import 'stack_visualization_screen.dart';
 import 'queue_visualization_screen.dart';
+import 'tree_visualization_screen.dart';
+import 'graph_visualization_screen.dart';
+import 'sorting_visualization_screen.dart';
 
 /// Home Screen with Data Structure Selection
 class HomeScreen extends StatelessWidget {
@@ -120,13 +123,19 @@ class HomeScreen extends StatelessWidget {
         type: DSType.tree,
         icon: Icons.account_tree,
         gradient: [const Color(0xFFf093fb), const Color(0xFFf5576c)],
-        onTap: () => _showComingSoon(context, 'Tree'),
+        onTap: () => _navigateTo(context, const TreeVisualizationScreen()),
       ),
       _DSCardData(
         type: DSType.graph,
         icon: Icons.hub,
         gradient: [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
-        onTap: () => _showComingSoon(context, 'Graph'),
+        onTap: () => _navigateTo(context, const GraphVisualizationScreen()),
+      ),
+      _DSCardData(
+        type: DSType.sorting,
+        icon: Icons.bar_chart,
+        gradient: [const Color(0xFFfa709a), const Color(0xFFfee140)],
+        onTap: () => _navigateTo(context, const SortingVisualizationScreen()),
       ),
     ];
 
@@ -147,7 +156,7 @@ class HomeScreen extends StatelessWidget {
             )
           : ListView.separated(
               itemCount: cards.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) => SizedBox(
                 height: 140,
                 child: _buildCard(context, cards[index]),
@@ -188,38 +197,47 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             // Content
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(51),
-                      borderRadius: BorderRadius.circular(12),
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(51),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(data.icon, color: Colors.white, size: 22),
                     ),
-                    child: Icon(data.icon, color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    data.type.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: Text(
+                        data.type.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data.type.description,
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(204),
-                      fontSize: 14,
+                    const SizedBox(height: 2),
+                    Flexible(
+                      child: Text(
+                        data.type.description,
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(204),
+                          fontSize: 11,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             // Arrow
@@ -277,16 +295,6 @@ class HomeScreen extends StatelessWidget {
           );
         },
         transitionDuration: AppConstants.animationNormal,
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String name) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$name visualization coming soon!'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

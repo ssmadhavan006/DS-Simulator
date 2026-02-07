@@ -6,6 +6,7 @@ import '../widgets/common/control_panel.dart';
 import '../widgets/common/operation_button.dart';
 import '../widgets/common/value_input_dialog.dart';
 import '../widgets/common/complexity_display.dart';
+import '../widgets/common/code_preview.dart';
 import '../utils/constants.dart';
 
 /// Queue Visualization Screen
@@ -152,7 +153,7 @@ class _QueueVisualizationContent extends StatelessWidget {
               right: BorderSide(color: theme.dividerColor, width: 1),
             ),
           ),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -203,7 +204,7 @@ class _QueueVisualizationContent extends StatelessWidget {
                   enabled: !isAnimating && !provider.isEmpty,
                   onPressed: () => provider.clear(),
                 ),
-                const Spacer(),
+                const SizedBox(height: 16),
                 // Speed Control
                 ControlPanel(
                   speed: provider.animationSpeed,
@@ -280,54 +281,97 @@ class _QueueVisualizationContent extends StatelessWidget {
   Widget _buildDetailsPanel(BuildContext context, ThemeData theme) {
     return Consumer<QueueProvider>(
       builder: (context, provider, _) {
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(
-              left: BorderSide(color: theme.dividerColor, width: 1),
+        return DefaultTabController(
+          length: 2,
+          child: Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(
+                left: BorderSide(color: theme.dividerColor, width: 1),
+              ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Details',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                TabBar(
+                  tabs: const [
+                    Tab(text: 'Info'),
+                    Tab(text: 'Code'),
+                  ],
+                  labelColor: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 16),
-                const ComplexityDisplay(operation: 'enqueue', dsType: 'queue'),
-                const Divider(height: 24),
-                // Front/Rear indicators
-                _buildPointerInfo('Front', provider.front?.value, theme),
-                const SizedBox(height: 8),
-                _buildPointerInfo('Rear', provider.rear?.value, theme),
-                const Divider(height: 24),
-                Text(
-                  'History',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: provider.history.length,
-                    reverse: true,
-                    itemBuilder: (context, index) {
-                      final op =
-                          provider.history[provider.history.length - 1 - index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Text(
-                          '${op.type}${op.node != null ? "(${op.node!.value})" : ""}',
-                          style: theme.textTheme.bodySmall,
+                  child: TabBarView(
+                    children: [
+                      // Info Tab
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Details',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const ComplexityDisplay(
+                              operation: 'enqueue',
+                              dsType: 'queue',
+                            ),
+                            const Divider(height: 24),
+                            // Front/Rear indicators
+                            _buildPointerInfo(
+                              'Front',
+                              provider.front?.value,
+                              theme,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildPointerInfo(
+                              'Rear',
+                              provider.rear?.value,
+                              theme,
+                            ),
+                            const Divider(height: 24),
+                            Text(
+                              'History',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: provider.history.length,
+                                reverse: true,
+                                itemBuilder: (context, index) {
+                                  final op =
+                                      provider.history[provider.history.length -
+                                          1 -
+                                          index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 2,
+                                    ),
+                                    child: Text(
+                                      '${op.type}${op.node != null ? "(${op.node!.value})" : ""}',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
+                      ),
+                      // Code Tab
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: CodePreview(
+                          operation: provider.currentOperation ?? 'enqueue',
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
