@@ -267,7 +267,7 @@ class HomeScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Text(
-        'Select a data structure to begin visualization',
+        'Built by S.S. Madhavan',
         style: theme.textTheme.bodySmall?.copyWith(
           color: theme.textTheme.bodySmall?.color?.withAlpha(127),
         ),

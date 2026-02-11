@@ -146,32 +146,33 @@ class _SortingVisualizationContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                DropdownButtonFormField<int>(
-                  initialValue: provider.algorithms.indexOf(
-                    provider.currentAlgorithm,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: theme.dividerColor),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                  child: DropdownButton<String>(
+                    value: provider.currentAlgorithm.name,
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    items: provider.algorithms.map((algorithm) {
+                      return DropdownMenuItem(
+                        value: algorithm.name,
+                        child: Text(algorithm.name),
+                      );
+                    }).toList(),
+                    onChanged: isSorting
+                        ? null
+                        : (name) {
+                            if (name != null) {
+                              final algorithm = provider.algorithms.firstWhere(
+                                (a) => a.name == name,
+                              );
+                              provider.setAlgorithm(algorithm);
+                            }
+                          },
                   ),
-                  items: provider.algorithms.asMap().entries.map((entry) {
-                    return DropdownMenuItem(
-                      value: entry.key,
-                      child: Text(entry.value.name),
-                    );
-                  }).toList(),
-                  onChanged: isSorting
-                      ? null
-                      : (index) {
-                          if (index != null) {
-                            provider.setAlgorithm(provider.algorithms[index]);
-                          }
-                        },
                 ),
                 const SizedBox(height: 16),
 
