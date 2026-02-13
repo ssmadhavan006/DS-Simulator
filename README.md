@@ -20,20 +20,7 @@ An interactive Flutter application for visualizing common data structures and al
 
 <div align="center">
   
-[![DSA Visualizer Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-
-</div>
-
-*(Replace `YOUR_VIDEO_ID` with the actual YouTube video ID of your screen recording)*
-
-## 📸 Screenshots
-
-<div align="center">
-
-| Light Mode | Dark Mode |
-| :---: | :---: |
-| ![Stack Visualization Light](assets/screenshots/stack_light.png) | ![Queue Visualization Dark](assets/screenshots/queue_dark.png) |
-| *Stack visualization in light mode* | *Queue visualization in dark mode* |
+[![DSA Visualizer Demo](https://img.youtube.com/vi/EEBJdBS_rQ0/maxresdefault.jpg)](https://www.youtube.com/watch?v=EEBJdBS_rQ0)
 
 </div>
 
